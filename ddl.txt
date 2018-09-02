@@ -1,0 +1,280 @@
+RESTARTFAEHIGES DDL - SKRIPT:
+--Im restartfaehigen DDL-Skript werden zuerst alle alten Daten aus den Tabellen geloescht, Primary-Keys, Unique-Constraints, Foreign-Keys gedropped und die Tabellen gedropped. 
+--Dann werden alle Tabellen erstellt, Primary-Keys, Unique-Constraints, Foreign-Keys fuer die jeweiligen Tabellen gesetzt. 
+--Trigger werden erstellt. 
+--Funktionen werden erstellt.
+
+--Zuerst alle Daten aus abhaengigen Tabellen loeschen: 
+DELETE FROM bestellungen; 
+DELETE FROM mitarbeiter; 
+DELETE FROM verkauf; 
+DELETE FROM bewertungen; 
+DELETE FROM verleih; 
+DELETE FROM artikel; 
+DELETE FROM kunden;
+
+--Dann alle Daten aus unabhaengigen Tabellen loeschen: 
+DELETE FROM nutzer; 
+DELETE FROM filiale;
+
+--Alle Constraints der Tabllenchecks droppen 
+ALTER TABLE nutzer DROP CONSTRAINT nutzer_ck1; 
+ALTER TABLE nutzer DROP CONSTRAINT nutzer_ck2; 
+ALTER TABLE mitarbeiter DROP CONSTRAINT mitarbeiter_ck; 
+ALTER TABLE kunden DROP CONSTRAINT kunden_ck; 
+ALTER TABLE artikel DROP CONSTRAINT artikel_ck; 
+ALTER TABLE bewertungen DROP CONSTRAINT bewertungen_ck1; 
+ALTER TABLE bewertungen DROP CONSTRAINT bewertungen_ck2;
+
+--Alle Constraints der Foreign Keys droppen 
+ALTER TABLE kunden DROP CONSTRAINT kunden_fk; 
+ALTER TABLE mitarbeiter DROP CONSTRAINT mitarbeiter_fk1; 
+ALTER TABLE mitarbeiter DROP CONSTRAINT mitarbeiter_fk2; 
+ALTER TABLE bestellungen DROP CONSTRAINT bestellungen_fk1; 
+ALTER TABLE bestellungen DROP CONSTRAINT bestellungen_fk2; 
+ALTER TABLE bestellungen DROP CONSTRAINT bestellungen_fk3; 
+ALTER TABLE verkauf DROP CONSTRAINT verkauf_fk1; 
+ALTER TABLE verkauf DROP CONSTRAINT verkauf_fk2; 
+ALTER TABLE verkauf DROP CONSTRAINT verkauf_fk3; 
+ALTER TABLE verleih DROP CONSTRAINT verleih_fk1; 
+ALTER TABLE verleih DROP CONSTRAINT verleih_fk2; 
+ALTER TABLE verleih DROP CONSTRAINT verleih_fk3; 
+ALTER TABLE bewertungen DROP CONSTRAINT bewertungen_fk1; 
+ALTER TABLE bewertungen DROP CONSTRAINT bewertungen_fk2;
+
+--Alle Unique Constraints droppen 
+ALTER TABLE nutzer DROP CONSTRAINT nutzer_un; 
+ALTER TABLE mitarbeiter DROP CONSTRAINT mitarbeiter_un; 
+ALTER TABLE kunden DROP CONSTRAINT kunden_un; 
+ALTER TABLE filiale DROP CONSTRAINT filiale_un;
+
+--Alle Primary Keys droppen 
+ALTER TABLE kunden DROP CONSTRAINT kunden_pk; 
+ALTER TABLE mitarbeiter DROP CONSTRAINT mitarbeiter_pk; 
+ALTER TABLE bestellungen DROP CONSTRAINT bestellungen_pk; 
+ALTER TABLE artikel DROP CONSTRAINT artikel_pk; 
+ALTER TABLE bewertungen DROP CONSTRAINT bewertungen_pk; 
+ALTER TABLE verkauf DROP CONSTRAINT verkauf_pk; 
+ALTER TABLE verleih DROP CONSTRAINT verleih_pk; 
+ALTER TABLE nutzer DROP CONSTRAINT nutzer_pk; 
+ALTER TABLE filiale DROP CONSTRAINT filiale_pk;
+
+--Abhaengige Tabellen zuerst loeschen 
+DROP TABLE kunden; 
+DROP TABLE mitarbeiter; 
+DROP TABLE artikel; 
+DROP TABLE bewertungen; 
+DROP TABLE verkauf; 
+DROP TABLE verleih; 
+DROP TABLE bestellungen;
+
+--Dann unabhaengige Tabellen loeschen 
+DROP TABLE nutzer; 
+DROP TABLE filiale;
+
+CREATE TABLE filiale (
+	filial_id INTEGER , 
+	plz VARCHAR(5) NOT NULL , 
+	stadt VARCHAR(15) NOT NULL , 
+	strasse VARCHAR(30) NOT NULL , 
+	umsatz_verkauf FLOAT NOT NULL , 
+	umsatz_verleih FLOAT NOT NULL , 
+	umsatz_gesamt FLOAT NOT NULL 
+);
+
+--Tabellen ohne Keys anlegen 
+CREATE TABLE nutzer (
+	nutzer_id INTEGER , 
+	rolle VARCHAR(15) NOT NULL , 
+	nutzername VARCHAR(20) NOT NULL , 
+	name VARCHAR(40) NOT NULL , 
+	vorname VARCHAR(40) NOT NULL , 
+	email VARCHAR(40) NOT NULL, 
+	passwort VARCHAR(20) NOT NULL 
+);
+CREATE TABLE mitarbeiter (
+	mitarbeiter_id INTEGER , 
+	filial_id INTEGER NOT NULL , 
+	nutzer_id INTEGER NOT NULL , 
+	gehalt FLOAT NOT NULL 
+); 
+CREATE TABLE kunden (
+	kunden_id INTEGER , 
+	nutzer_id INTEGER NOT NULL , 
+	stammkunde CHAR(1) NOT NULL 
+);
+CREATE TABLE bestellungen ( 
+	bestell_id INTEGER , 
+	artikel_id INTEGER NOT NULL , 
+	mitarbeiter_id INTEGER NOT NULL , 
+	filial_id INTEGER NOT NULL , 
+	bestellmenge INTEGER NOT NULL , 
+	bestelldatum DATE NOT NULL , 
+	lieferdatum DATE NOT NULL , 
+	lieferant VARCHAR(20) NOT NULL 
+);
+CREATE TABLE artikel (
+	artikel_id INTEGER , 
+	typ VARCHAR(4) NOT NULL , 
+	titel VARCHAR(40) NOT NULL , 
+	interpret VARCHAR(40) NOT NULL , 
+	preis FLOAT NOT NULL , 
+	berbestand INTEGER NOT NULL , 
+	hambestand INTEGER NOT NULL , 
+	stubestand INTEGER NOT NULL , 
+	muebestand INTEGER NOT NULL );
+CREATE TABLE verkauf (
+	verkauf_id INTEGER , 
+	kunden_id INTEGER NOT NULL , 
+	artikel_id INTEGER NOT NULL , 
+	filial_id INTEGER NOT NULL , 
+	kaufdatum DATE NOT NULL , 
+	verkaufsmenge INTEGER NOT NULL , 
+	betrag FLOAT NOT NULL 
+);
+CREATE TABLE verleih (
+	verleih_id INTEGER , 
+	kunden_id INTEGER NOT NULL , 
+	artikel_id INTEGER NOT NULL , 
+	filial_id INTEGER NOT NULL , 
+	ausleihdatum DATE NOT NULL , 
+	rueckgabedatum DATE NOT NULL , 
+	verleihmenge INTEGER NOT NULL , 
+	gebuehr FLOAT NOT NULL 
+);
+CREATE TABLE bewertungen (
+	bewertung_id INTEGER , 
+	kunden_id INTEGER NOT NULL , 
+	artikel_id INTEGER NOT NULL , 
+	rating INTEGER NOT NULL , 
+	uhrzeit TIMESTAMP NOT NULL , 
+	kommentar VARCHAR(500) NOT NULL 
+);
+
+--Primary Keys anlegen und Namen fuer einfachere Loeschung vergeben: 
+ALTER TABLE nutzer ADD CONSTRAINT nutzer_pk PRIMARY KEY (nutzer_id); 
+ALTER TABLE mitarbeiter ADD CONSTRAINT mitarbeiter_pk PRIMARY KEY (mitarbeiter_id); 
+ALTER TABLE kunden ADD CONSTRAINT kunden_pk PRIMARY KEY (kunden_id); 
+ALTER TABLE bestellungen ADD CONSTRAINT bestellungen_pk PRIMARY KEY (bestell_id); 
+ALTER TABLE artikel ADD CONSTRAINT artikel_pk PRIMARY KEY (artikel_id); 
+ALTER TABLE verkauf ADD CONSTRAINT verkauf_pk PRIMARY KEY (verkauf_id); 
+ALTER TABLE verleih ADD CONSTRAINT verleih_pk PRIMARY KEY (verleih_id); 
+ALTER TABLE filiale ADD CONSTRAINT filiale_pk PRIMARY KEY (filial_id); 
+ALTER TABLE bewertungen ADD CONSTRAINT bewertungen_pk PRIMARY KEY (bewertung_id);
+
+--Unique-Constraints hinzufuegen: 
+ALTER TABLE nutzer ADD CONSTRAINT nutzer_un UNIQUE (nutzername, email); 
+ALTER TABLE mitarbeiter ADD CONSTRAINT mitarbeiter_un UNIQUE (nutzer_id); 
+ALTER TABLE kunden ADD CONSTRAINT kunden_un UNIQUE (nutzer_id); 
+ALTER TABLE filiale ADD CONSTRAINT filiale_un UNIQUE(plz, stadt, strasse);
+
+--Foreign Keys anlegen und Namen fuer einfachere Loeschung vergeben: 
+ALTER TABLE mitarbeiter ADD CONSTRAINT mitarbeiter_fk1 FOREIGN KEY (nutzer_id) REFERENCES nutzer (nutzer_id); 
+ALTER TABLE mitarbeiter ADD CONSTRAINT mitarbeiter_fk2 FOREIGN KEY (filial_id) REFERENCES filiale (filial_id); 
+ALTER TABLE kunden ADD CONSTRAINT kunden_fk FOREIGN KEY (nutzer_id) REFERENCES nutzer (nutzer_id); 
+ALTER TABLE bestellungen ADD CONSTRAINT bestellungen_fk1 FOREIGN KEY (artikel_id) REFERENCES artikel (artikel_id); 
+ALTER TABLE bestellungen ADD CONSTRAINT bestellungen_fk2 FOREIGN KEY (mitarbeiter_id) REFERENCES mitarbeiter (mitarbeiter_id); 
+ALTER TABLE bestellungen ADD CONSTRAINT bestellungen_fk3 FOREIGN KEY (filial_id) REFERENCES filiale (filial_id); 
+ALTER TABLE verkauf ADD CONSTRAINT verkauf_fk1 FOREIGN KEY (kunden_id) REFERENCES kunden (kunden_id); 
+ALTER TABLE verkauf ADD CONSTRAINT verkauf_fk2 FOREIGN KEY (artikel_id) REFERENCES artikel (artikel_id); 
+ALTER TABLE verkauf ADD CONSTRAINT verkauf_fk3 FOREIGN KEY (filial_id) REFERENCES filiale (filial_id); 
+ALTER TABLE verleih ADD CONSTRAINT verleih_fk1 FOREIGN KEY (kunden_id) REFERENCES kunden (kunden_id); 
+ALTER TABLE verleih ADD CONSTRAINT verleih_fk2 FOREIGN KEY (artikel_id) REFERENCES artikel (artikel_id); 
+ALTER TABLE verleih ADD CONSTRAINT verleih_fk3 FOREIGN KEY (filial_id) REFERENCES filiale (filial_id); 
+ALTER TABLE bewertungen ADD CONSTRAINT bewertungen_fk1 FOREIGN KEY (kunden_id) REFERENCES kunden (kunden_id); 
+ALTER TABLE bewertungen ADD CONSTRAINT bewertungen_fk2 FOREIGN KEY (artikel_id) REFERENCES artikel (artikel_id);
+
+--Checks anlegen und Namen fuer einfachere Loeschung vergeben 
+ALTER TABLE nutzer ADD CONSTRAINT nutzer_ck1 CHECK (rolle IN ('Kunde', 'Mitarbeiter', 'Chef')); 
+ALTER TABLE nutzer ADD CONSTRAINT nutzer_ck2 CHECK (LENGTH(passwort) >= 8); 
+ALTER TABLE mitarbeiter ADD CONSTRAINT mitarbeiter_ck CHECK (filial_id IN (1, 2, 3, 4)); 
+ALTER TABLE kunden ADD CONSTRAINT kunden_ck CHECK (stammkunde IN ('J', 'N')); 
+ALTER TABLE artikel ADD CONSTRAINT artikel_ck CHECK (typ IN ('CD', 'EP', 'LP', 'Maxi')); 
+ALTER TABLE bewertungen ADD CONSTRAINT bewertungen_ck1 CHECK (rating IN (1, 2, 3, 4, 5)); 
+ALTER TABLE bewertungen ADD CONSTRAINT bewertungen_ck2 CHECK (LENGTH(kommentar) >= 5);
+
+--Tabellen mithilfe von MODIFY bearbeiten und DEFAULT-Werte uebergeben 
+ALTER TABLE filiale MODIFY (umsatz_verkauf DEFAULT 0.00); 
+ALTER TABLE filiale MODIFY (umsatz_verleih DEFAULT 0.00); 
+ALTER TABLE filiale MODIFY (umsatz_gesamt DEFAULT 0.00); 
+ALTER TABLE mitarbeiter MODIFY (filial_id DEFAULT 1); 
+ALTER TABLE mitarbeiter MODIFY (gehalt DEFAULT 0.00); 
+ALTER TABLE kunden MODIFY (stammkunde DEFAULT 'N'); 
+ALTER TABLE bestellungen MODIFY (mitarbeiter_id DEFAULT 0);
+ALTER TABLE bestellungen MODIFY (bestelldatum DEFAULT SYSDATE); 
+ALTER TABLE verkauf MODIFY (kaufdatum DEFAULT SYSDATE); 
+ALTER TABLE verkauf MODIFY (verkaufsmenge DEFAULT 0); 
+ALTER TABLE verkauf MODIFY (betrag DEFAULT 0.00); 
+ALTER TABLE verleih MODIFY (ausleihdatum DEFAULT SYSDATE); 
+ALTER TABLE verleih MODIFY (rueckgabedatum DEFAULT SYSDATE + 14); 
+ALTER TABLE verleih MODIFY (gebuehr DEFAULT 0.00); 
+ALTER TABLE bewertungen MODIFY (uhrzeit DEFAULT LOCALTIMESTAMP);
+
+--Trigger fuer Bestand in Berlin 
+create or replace TRIGGER BERBESTAND_UNTER_5 BEFORE INSERT OR UPDATE OF BERBESTAND ON ARTIKEL REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW DECLARE BEGIN
+	DBMS_OUTPUT.ENABLE(100); IF : NEW.BERBESTAND < 5 THEN
+		DBMS_OUTPUT.PUT_LINE('weniger als 5 Exemplare von ' || :NEW.TYP || ' ' || :NEW.ARTIKEL_ID || ' in Berlin vorhanden – mehr ist unterwegs');
+		DBMS_OUTPUT.PUT_LINE('Alter Bestand:' || :NEW.BERBESTAND);
+		END IF; 
+	END;
+/
+
+--Trigger fuer Bestand in Hamburg 
+create or replace TRIGGER HAMBESTAND_UNTER_5 BEFORE INSERT OR UPDATE OF HAMBESTAND ON ARTIKEL REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW DECLARE BEGIN
+	DBMS_OUTPUT.ENABLE(100); IF : NEW.HAMBESTAND < 5 THEN
+		DBMS_OUTPUT.PUT_LINE('weniger als 5 Exemplare von ' || :NEW.TYP || ' ' || :NEW.ARTIKEL_ID || ' in Hamburg vorhanden – mehr ist unterwegs');
+		DBMS_OUTPUT.PUT_LINE('Alter Bestand:' || :NEW.HAMBESTAND);
+	END IF; 
+END;
+/
+
+--Trigger fuer Bestand in Stuttgart
+create or replace TRIGGER STUBESTAND_UNTER_5 BEFORE INSERT OR UPDATE OF STUBESTAND ON ARTIKEL REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW DECLARE BEGIN
+	DBMS_OUTPUT.ENABLE(100); IF : NEW.STUBESTAND < 5 THEN
+		DBMS_OUTPUT.PUT_LINE('weniger als 5 Exemplare von ' || :NEW.TYP || ' ' || :NEW.ARTIKEL_ID || ' in Stuttgart vorhanden – mehr ist unterwegs');
+		DBMS_OUTPUT.PUT_LINE('Alter Bestand:' || :NEW.STUBESTAND);
+	END IF; 
+END;
+/
+
+--Trigger fuer Bestand in Muenchen 
+create or replace TRIGGER MUEBESTAND_UNTER_5 BEFORE INSERT OR UPDATE OF MUEBESTAND ON ARTIKEL REFERENCING NEW AS NEW OLD AS OLD FOR EACH ROW DECLARE BEGIN
+	DBMS_OUTPUT.ENABLE(100); IF : NEW.MUEBESTAND < 5 THEN
+		DBMS_OUTPUT.PUT_LINE('weniger als 5 Exemplare von ' || :NEW.TYP || ' ' || :NEW.ARTIKEL_ID || ' in Muenchen vorhanden – mehr ist unterwegs');
+		DBMS_OUTPUT.PUT_LINE('Alter Bestand:' || :NEW.MUEBESTAND);
+	END IF; 
+END;
+/
+
+--Funktion zur Summierung der Umsaetze aus Verkauf und Umsaetze aus Verleih 
+create or replace FUNCTION UMSATZ_GESAMT (ifilial_id IN INT) RETURN NUMBER AS
+	summe_verleih float :=0; summe_verkauf float :=0; summe_gesamt float :=0;
+BEGIN
+	SELECT UMSATZ_VERKAUF INTO summe_verkauf FROM FILIALE WHERE filial_id = ifilial_id;
+	SELECT UMSATZ_VERLEIH INTO summe_verleih FROM FILIALE WHERE filial_id = ifilial_id;
+	summe_gesamt := summe_verleih + summe_verkauf;
+	RETURN summe_gesamt; 
+END UMSATZ_GESAMT;
+/
+
+--Funktion zur Summierung der Betraege aus Verkauf 
+create or replace FUNCTION UMSATZ_VERKAUF (ifilial_id IN INT) RETURN NUMBER AS
+	verkaufsumme float :=0;
+BEGIN
+	SELECT SUM(betrag) INTO verkaufsumme FROM verkauf
+	WHERE filial_id = ifilial_id; 
+	RETURN verkaufsumme; 
+END UMSATZ_VERKAUF;
+/
+
+--Funktion zur Summierung der Betraege aus Verleih 
+create or replace FUNCTION UMSATZ_VERLEIH (ifilial_id IN INT) RETURN NUMBER AS
+	verleihsumme float :=0;
+BEGIN
+	SELECT SUM(gebuehr) INTO verleihsumme FROM verleih
+	WHERE filial_id = ifilial_id; 
+	RETURN verleihsumme; 
+END UMSATZ_VERLEIH;
+/
+
+COMMIT;

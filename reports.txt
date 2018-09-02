@@ -1,0 +1,36 @@
+DROP VIEW gesamtreport;
+--Allgemeine SELECT-Befehle 
+SELECT * FROM nutzer; 
+SELECT * FROM kunden; 
+SELECT * FROM mitarbeiter; 
+SELECT * FROM filiale; 
+SELECT * FROM bestellungen; 
+SELECT * FROM artikel; 
+SELECT * FROM verkauf; 
+SELECT * FROM verleih; 
+SELECT * FROM bewertungen;
+
+--SELECT-Befehle, die den Gesamtumsatz der EINZELNEN Filialen ausgeben 
+SELECT SUM(umsatz_verleih + umsatz_verkauf) AS ber_umsatz FROM filiale WHERE filial_id = 1; 
+SELECT SUM(umsatz_verleih + umsatz_verkauf) AS ham_umsatz FROM filiale WHERE filial_id = 2; 
+SELECT SUM(umsatz_verleih + umsatz_verkauf) AS stu_umsatz FROM filiale WHERE filial_id = 3; 
+SELECT SUM(umsatz_verleih + umsatz_verkauf) AS mue_umsatz FROM filiale WHERE filial_id = 4;
+
+--SELECT-Befehl, der den Gesamtumsatz ALLER Filialen ausgibt 
+SELECT SUM(umsatz_verleih + umsatz_verkauf) AS alle_filialen_umsatz FROM filiale;
+
+--Erstellung eines VIEWS, um den Umsatz aus Verkauf, Umsatz aus Verleih und Gesamtumsatz nach Filial_ID geordnet als VIEW Gesamtreport auszugeben 
+CREATE VIEW gesamtreport AS SELECT filial_id, umsatz_verkauf, umsatz_verleih, umsatz_verkauf+umsatz_verleih gesamtumsatz FROM filiale ORDER BY filial_id ASC; 
+--SELECT-Befehl zeigt die gerade eben erstellte VIEW an SELECT * FROM gesamtreport;
+
+
+--TRIGGER fuer zu geringe Bestaende werden in CREATE_TABLE.sql aufgerufen und die Ausgabe davon erscheint bei INSERT oder UPDATE der Tabelle Artikel mit einem Bestand von unter 5. 
+
+--UPDATE-Befehle zum Testen der Trigger - Ansicht DMBS_Ausgabe aktivieren und Verbindung mit + aktivieren. 
+UPDATE artikel SET berbestand = 3 WHERE artikel_id = 757; 
+UPDATE artikel SET hambestand = 1 WHERE artikel_id = 759; 
+UPDATE artikel SET stubestand = 4 WHERE artikel_id = 761; 
+UPDATE artikel SET muebestand = 2 WHERE artikel_id = 764; 
+
+--Triggermeldung "Weniger als ..." sollte in der DBMS_Ausgabe fuer jeweiligen Artikel bzw. Standort erscheinen, sobald Verbindung dafür aktiviert wurde (+).
+COMMIT;
